@@ -1,4 +1,4 @@
-name: Build Android APK with Custom Name & Logo
+name: Build Android APK from www folder
 
 on:
   push:
@@ -25,11 +25,7 @@ jobs:
 
       - name: Initialize Capacitor
         run: |
-          mkdir -p www
-          cp index.html www/ 2>/dev/null || true 
-          if [ -f style.css ]; then cp style.css www/; fi
-          if [ -f script.js ]; then cp script.js www/; fi
-          # Yahan "My Reminder App" ki jagah apne app ka naya naam aur package name likh sakte hain
+          # Capacitor ko bata rahe hain ki web files 'www' folder ke andar hain
           npx cap init "My Reminder App" "com.myname.reminderapp" --web-dir=www
 
       - name: Add Android Platform
@@ -37,10 +33,11 @@ jobs:
           npx cap add android
           npx cap sync
 
-      - name: Generate App Icons and Splash Screen
+      - name: Generate App Icons from www/icon.png
         run: |
           npm install @capacitor/assets --save-dev
-          npx capacitor-assets generate --android
+          # Agar icon www folder ke andar hai toh assets command wahi target karegi
+          npx capacitor-assets generate --android --assetPath www
 
       - name: Fix Kotlin Duplicate Classes Conflict
         run: |
@@ -67,5 +64,5 @@ jobs:
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: My-Custom-App-APK
+          name: Reminder-App-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
