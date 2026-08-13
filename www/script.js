@@ -181,3 +181,17 @@ function triggerNotification(task) {
         alert(`Reminder: ${task}`);
     }
 }
+
+function requestAppPermission() {
+    if (window.Notification && Notification.permission !== "granted") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                alert("Notifications enabled successfully!");
+            } else {
+                alert("Permission denied!");
+            }
+        });
+    } else {
+        alert("Permissions are already granted or not supported.");
+    }
+}
