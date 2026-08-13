@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const options = { weekday: 'long', month: 'short', day: 'numeric' };
     const today = new Date().toLocaleDateString('hi-IN', options);
-    document.getElementById("current-date").innerText = today;
+    const dateEl = document.getElementById("current-date");
+    if (dateEl) dateEl.innerText = today;
 
     buildClockColumns();
     renderReminders();
@@ -20,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function buildClockColumns() {
     const hourCol = document.getElementById("hourColumn");
     const minuteCol = document.getElementById("minuteColumn");
+
+    if (!hourCol || !minuteCol) return;
 
     hourCol.innerHTML = "";
     minuteCol.innerHTML = "";
@@ -31,18 +34,18 @@ function buildClockColumns() {
         div.classList.add("time-option");
         if (h === selectedHour) div.classList.add("selected");
         div.innerText = h;
-        div.onclick = () => selectHour(h, div);
+        div.onclick = (e) => selectHour(h, div);
         hourCol.appendChild(div);
     }
 
-    // Minutes (00, 05, 10 ... 55 ya saare 00-59)
+    // Minutes (00 to 59)
     for (let i = 0; i < 60; i++) {
         let m = String(i).padStart(2, '0');
         let div = document.createElement("div");
         div.classList.add("time-option");
         if (m === selectedMinute) div.classList.add("selected");
         div.innerText = m;
-        div.onclick = () => selectMinute(m, div);
+        div.onclick = (e) => selectMinute(m, div);
         minuteCol.appendChild(div);
     }
 }
@@ -59,24 +62,31 @@ function selectMinute(m, element) {
     element.classList.add("selected");
 }
 
-function setAmPm(val) {
+function setAmPm(val, element) {
     selectedAmPm = val;
     document.querySelectorAll("#ampmColumn .time-option").forEach(el => el.classList.remove("selected"));
-    event.target.classList.add("selected");
+    if (element) {
+        element.classList.add("selected");
+    } else if (window.event && window.event.target) {
+        window.event.target.classList.add("selected");
+    }
 }
 
 // Modal Open/Close
 function openTimePicker() {
-    document.getElementById("clockModal").classList.add("active");
+    const modal = document.getElementById("clockModal");
+    if (modal) modal.classList.add("active");
 }
 
 function closeTimePicker() {
-    document.getElementById("clockModal").classList.remove("active");
+    const modal = document.getElementById("clockModal");
+    if (modal) modal.classList.remove("active");
 }
 
 function confirmTime() {
     const displayString = `${selectedHour}:${selectedMinute} ${selectedAmPm}`;
-    document.getElementById("selectedTimeString").innerText = displayString;
+    const timeStrEl = document.getElementById("selectedTimeString");
+    if (timeStrEl) timeStrEl.innerText = displayString;
     closeTimePicker();
 }
 
@@ -90,7 +100,10 @@ function convertTo24Hour(hour, minute, ampm) {
 
 // Reminder Add Karna
 function addReminder() {
-    const taskName = document.getElementById("taskName").value.trim();
+    const taskInput = document.getElementById("taskName");
+    if (!taskInput) return;
+
+    const taskName = taskInput.value.trim();
     if (!taskName) {
         alert("Kripya task ka naam bharein!");
         return;
@@ -108,7 +121,7 @@ function addReminder() {
 
     reminders.push(newReminder);
     saveAndRender();
-    document.getElementById("taskName").value = "";
+    taskInput.value = "";
 }
 
 function saveAndRender() {
@@ -118,6 +131,8 @@ function saveAndRender() {
 
 function renderReminders() {
     const list = document.getElementById("reminderList");
+    if (!list) return;
+
     list.innerHTML = "";
 
     if (reminders.length === 0) {
@@ -179,19 +194,5 @@ function triggerNotification(task) {
         });
     } else {
         alert(`Reminder: ${task}`);
-    }
-}
-
-function requestAppPermission() {
-    if (window.Notification && Notification.permission !== "granted") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                alert("Notifications enabled successfully!");
-            } else {
-                alert("Permission denied!");
-            }
-        });
-    } else {
-        alert("Permissions are already granted or not supported.");
     }
 }
